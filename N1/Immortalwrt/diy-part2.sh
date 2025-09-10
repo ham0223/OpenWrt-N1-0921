@@ -19,7 +19,6 @@ git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/l
 # 删除及其拉取源码
 git clone https://github.com/ophub/luci-app-amlogic --depth=1 package/amlogic
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
-git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/adguardhome
 
 rm -rf feeds/luci/applications/luci-app-mosdns
 git clone https://github.com/sbwml/luci-app-openlist2 package/openlist
