@@ -20,6 +20,7 @@ git clone https://github.com/xiaorouji/openwrt-passwall --depth=1 package/passwa
 git clone https://github.com/xiaorouji/openwrt-passwall2 --depth=1 package/passwall2
 git clone https://github.com/xiaorouji/openwrt-passwall-packages package/passwall-packages
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
+git clone https://github.com/sbwml/luci-app-openlist2 package/openlist
 
 # 科学插件的依赖-备用
 git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
