@@ -7,9 +7,9 @@ sed -i 's/ImmortalWrt/OpenWrt/g' package/base-files/files/bin/config_generate
 
 
 
-# 科学插件：移除 openwrt feeds 自带的核心包
-rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
-git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
+# 备用科学插件：移除 openwrt feeds 自带的核心包
+#rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
+#git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
 # 更新 golang 1.25 版本
 rm -rf feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/lang/golang
@@ -19,7 +19,6 @@ git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/l
 # 删除及其拉取源码
 git clone https://github.com/ophub/luci-app-amlogic --depth=1 package/amlogic
 git clone https://github.com/gdy666/luci-app-lucky.git package/lucky
-
 rm -rf feeds/luci/applications/luci-app-mosdns
 git clone https://github.com/sbwml/luci-app-openlist2 package/openlist
 git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
