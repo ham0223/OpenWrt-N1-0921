@@ -11,7 +11,7 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: N1/Lede/LE-feeds.conf.default
-  CONFIG_FILE: N1/Lede/2025-0416.config
+  CONFIG_FILE: N1/Lede/2025-0916.config
   DIY_P1_SH: N1/Lede/diy-part1.sh
   DIY_P2_SH: N1/Lede/diy-part2.sh
   FILES: N1/Lede/files
@@ -194,19 +194,19 @@ jobs:
               
               更新说明：
               2025-0418：本固件所含插件，请看主页图片。
-              2025-0911：同步上游的更新。
+              2025-0916：同步上游的更新。
 
     - name: 删除运行记录
       uses: Mattraks/delete-workflow-runs@main
       with:
         retain_days: 3
-        keep_minimum_runs: 4
+        keep_minimum_runs: 5
         token: ${{ env.GITHUB_TOKEN }}
 
     - name: 删除自动发布的旧固件
       uses: dev-drprasad/delete-older-releases@master
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:
-        keep_latest: 5
+        keep_latest: 7
         delete_tags : true
         
