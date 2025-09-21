@@ -159,7 +159,7 @@ jobs:
               密码：password
               更新说明：
               2025-0418：本固件所含插件，请看主页图片。
-              2025-0921：同步上游的更新。测试是否缓存可以。
+              2025-0921：同步上游的更新。测试是否缓存可以，第二遍。
 
     - name: 删除自动发布的旧固件
       uses: dev-drprasad/delete-older-releases@master
