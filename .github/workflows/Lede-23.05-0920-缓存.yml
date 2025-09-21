@@ -1,4 +1,4 @@
-name: Lede-23.05-0920-缓存
+name: Lede-23.05-0916-缓存
 
 on:
   repository_dispatch:
@@ -8,9 +8,9 @@ env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
   FEEDS_CONF: N1/Lede/LE-feeds.conf.default
-  CONFIG_FILE: N1/Lede/2025-0920.config
+  CONFIG_FILE: N1/Lede/2025-0916.config
   DIY_P1_SH: N1/Lede/diy-part1.sh
-  DIY_P2_SH: N1/Lede/diy-part22.sh
+  DIY_P2_SH: N1/Lede/diy-part2.sh
   FILES: N1/Lede/files
   TZ: Asia/Shanghai
   GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
@@ -146,7 +146,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         name: OpenWrt-N1 → ${{ env.DATE }}
-        tag: N1--23.05_${{ env.tag_name }}
+        tag: hcN1--23.05_${{ env.tag_name }}
         artifacts: /workdir/upload/*
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
@@ -159,7 +159,7 @@ jobs:
               密码：password
               更新说明：
               2025-0418：本固件所含插件，请看主页图片。
-              2025-0921：同步上游的更新。
+              2025-0921：同步上游的更新。测试是否缓存可以。
 
     - name: 删除自动发布的旧固件
       uses: dev-drprasad/delete-older-releases@master
