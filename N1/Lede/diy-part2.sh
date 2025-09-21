@@ -28,8 +28,8 @@ git clone https://github.com/xiaorouji/openwrt-passwall package/passwall-luci
 
 
 # 备份科学插件源：移除 openwrt feeds 自带的核心包
-#rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
-#git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
+rm -rf feeds/packages/net/{xray-core,v2ray-core,v2ray-geodata,sing-box}
+git clone https://github.com/sbwml/openwrt_helloworld package/helloworld
 # 更新 golang 1.25 版本
 rm -rf feeds/packages/lang/golang
 git clone https://github.com/sbwml/packages_lang_golang -b 25.x feeds/packages/lang/golang
@@ -50,40 +50,3 @@ git clone https://github.com/sbwml/packages_lang_golang feeds/packages/lang/gola
 # 修正俩处错误的翻译
 sed -i 's/<%:Up%>/<%:Move up%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
 sed -i 's/<%:Down%>/<%:Move down%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
-
-
-
-
-# 切换 OpenWrt 编译目标：删除 amlogic/N1，改为 armsr/armv8/generic
-# 2025-09-20
-
-CONFIG_FILE=".config"
-
-echo "=== [1/3] 删除 amlogic/N1 相关配置 ==="
-sed -i -e '/CONFIG_TARGET_amlogic/d' \
-       -e '/CONFIG_TARGET_amlogic_mesongx/d' \
-       -e '/CONFIG_TARGET_amlogic_mesongx_DEVICE_phicomm_n1/d' "$CONFIG_FILE" \
-    && echo "[OK] 已删除 amlogic/N1 配置"
-
-echo "=== [2/3] 添加 armsr/armv8/generic 配置 ==="
-if ! grep -q 'CONFIG_TARGET_armsr=y' "$CONFIG_FILE"; then
-    echo 'CONFIG_TARGET_armsr=y' >> "$CONFIG_FILE"
-    echo "[OK] 添加 CONFIG_TARGET_armsr=y"
-fi
-if ! grep -q 'CONFIG_TARGET_armsr_armv8=y' "$CONFIG_FILE"; then
-    echo 'CONFIG_TARGET_armsr_armv8=y' >> "$CONFIG_FILE"
-    echo "[OK] 添加 CONFIG_TARGET_armsr_armv8=y"
-fi
-if ! grep -q 'CONFIG_TARGET_armsr_armv8_DEVICE_generic=y' "$CONFIG_FILE"; then
-    echo 'CONFIG_TARGET_armsr_armv8_DEVICE_generic=y' >> "$CONFIG_FILE"
-    echo "[OK] 添加 CONFIG_TARGET_armsr_armv8_DEVICE_generic=y"
-fi
-
-echo "=== [3/3] 整理依赖 (make defconfig) ==="
-make defconfig
-echo "[OK] defconfig 完成"
-
-echo "=== 检查最终目标配置 ==="
-grep CONFIG_TARGET_ "$CONFIG_FILE"
-
-echo "=== 脚本执行完成 ==="
