@@ -38,23 +38,20 @@ sed -i 's/<%:Down%>/<%:Move down%>/g' feeds/luci/modules/luci-compat/luasrc/view
 
 # 2025年9月22日
 #!/bin/bash
-# 一键替换脚本
+# 一键更新 dns2socks-rust Makefile
 
-# 定义源文件和目标文件路径
-SRC="OpenWrt-N1-0921/N1/Immortalwrt/Makefile"
-DST="package/feeds/small/dns2socks-rust/Makefile"
+SRC_URL="https://raw.githubusercontent.com/kenzok8/small/master/dns2socks-rust/Makefile"
+DST_PATH="package/feeds/small/dns2socks-rust/Makefile"
 
-# 判断源文件是否存在
-if [ ! -e "$SRC" ]; then
-    echo "❌ 源文件不存在: $SRC"
+# 创建目标目录（如果不存在）
+mkdir -p "$(dirname "$DST_PATH")"
+
+# 下载并覆盖
+echo "⬇ 正在下载最新 Makefile..."
+if curl -fsSL "$SRC_URL" -o "$DST_PATH"; then
+    echo "✅ 已更新 $DST_PATH"
+else
+    echo "❌ 下载失败，请检查网络或链接"
     exit 1
 fi
 
-# 如果是目录就递归复制，否则直接覆盖
-if [ -d "$SRC" ]; then
-    cp -rf "$SRC" "$DST"
-else
-    cp -f "$SRC" "$DST"
-fi
-
-echo "✅ 已将 $SRC 替换到 $DST"
