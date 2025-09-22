@@ -36,22 +36,4 @@ sed -i 's/<%:Up%>/<%:Move up%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi
 sed -i 's/<%:Down%>/<%:Move down%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
 
 
-# 2025年9月22日
-#!/bin/bash
-# 一键更新 dns2socks-rust Makefile
-
-SRC_URL="https://raw.githubusercontent.com/kenzok8/small/master/dns2socks-rust/Makefile"
-DST_PATH="package/feeds/small/dns2socks-rust/Makefile"
-
-# 创建目标目录（如果不存在）
-mkdir -p "$(dirname "$DST_PATH")"
-
-# 下载并覆盖
-echo "⬇ 正在下载最新 Makefile..."
-if curl -fsSL "$SRC_URL" -o "$DST_PATH"; then
-    echo "✅ 已更新 $DST_PATH"
-else
-    echo "❌ 下载失败，请检查网络或链接"
-    exit 1
-fi
 
