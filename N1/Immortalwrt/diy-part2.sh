@@ -34,3 +34,27 @@ git clone https://github.com/sbwml/luci-app-mosdns -b v5 package/mosdns
 # 修正俩处错误的翻译
 sed -i 's/<%:Up%>/<%:Move up%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
 sed -i 's/<%:Down%>/<%:Move down%>/g' feeds/luci/modules/luci-compat/luasrc/view/cbi/tblsection.htm
+
+
+# 2025年9月22日
+#!/bin/bash
+# 一键替换脚本
+
+# 定义源文件和目标文件路径
+SRC="OpenWrt-N1-0921/N1/Immortalwrt/Makefile"
+DST="package/feeds/small/dns2socks-rust/Makefile"
+
+# 判断源文件是否存在
+if [ ! -e "$SRC" ]; then
+    echo "❌ 源文件不存在: $SRC"
+    exit 1
+fi
+
+# 如果是目录就递归复制，否则直接覆盖
+if [ -d "$SRC" ]; then
+    cp -rf "$SRC" "$DST"
+else
+    cp -f "$SRC" "$DST"
+fi
+
+echo "✅ 已将 $SRC 替换到 $DST"
