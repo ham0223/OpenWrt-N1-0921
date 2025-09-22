@@ -188,15 +188,7 @@ jobs:
 
               更新说明：
               2025-0418：本固件所含插件，请看主页图片。
-              2025-0922：同步上游的更新，增加SSR插件。测试是否正常编译？
-
-
-    - name: 删除运行记录
-      uses: Mattraks/delete-workflow-runs@main
-      with:
-        retain_days: 3
-        keep_minimum_runs: 4
-        token: ${{ env.GITHUB_TOKEN }}
+              2025-0923：同步上游的更新，增加SSR插件。科学依赖测试是否最新？
 
     - name: 删除自动发布的旧固件
       uses: dev-drprasad/delete-older-releases@master
