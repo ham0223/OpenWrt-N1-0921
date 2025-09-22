@@ -1,17 +1,20 @@
-name: Lede-23.05-0916-缓存C
+name: Immortalwrt-24.10-1
 
 on:
   repository_dispatch:
   workflow_dispatch:
 
+  #schedule:
+    #- cron: 0 16 * * 4
+
 env:
-  REPO_URL: https://github.com/coolsnowwolf/lede
-  REPO_BRANCH: master
-  FEEDS_CONF: N1/Lede/LE-feeds.conf.default
-  CONFIG_FILE: N1/Lede/2025-0916.config
-  DIY_P1_SH: N1/Lede/diy-part1.sh
-  DIY_P2_SH: N1/Lede/diy-part2.sh
-  FILES: N1/Lede/files
+  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_BRANCH: openwrt-24.10
+  FEEDS_CONF: N1/Immortalwrt/TL-feeds.conf.default
+  CONFIG_FILE: N1/Immortalwrt/2025-0922.config
+  DIY_P1_SH: N1/Immortalwrt/diy-part1.sh
+  DIY_P2_SH: N1/Immortalwrt/diy-part2.sh
+  FILES: N1/Immortalwrt/files
   TZ: Asia/Shanghai
   GITHUB_TOKEN: ${{ secrets.MY_TOKEN }}
 
@@ -24,7 +27,7 @@ jobs:
       run: |
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-
+        
     - name: 最大化编译空间
       uses: easimon/maximize-build-space@master
       with:
@@ -41,47 +44,48 @@ jobs:
     - name: 检查Actions
       uses: actions/checkout@v4
 
+    - name: 检查服务器配置
+      run: |
+        echo "警告⚠"
+        echo "分配的服务器性能有限，若选择的插件过多，务必注意CPU性能！"
+        echo "云编译建议取消勾选Node.js及其相关插件！"
+        echo "已知CPU型号（降序）：8370C,8272CL,8171M,E5系列"
+        echo "--------------------------CPU信息--------------------------"
+        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+        echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+        echo "--------------------------内存信息--------------------------"
+        echo "已安装内存详细信息："
+        sudo lshw -short -C memory | grep GiB
+        echo -e "\n"
+        echo "--------------------------硬盘信息--------------------------"
+        echo -e  "硬盘数量：$(ls /dev/sd* | grep -v [1-9] | wc -l) \n"
+        echo "硬盘详情："
+        df -Th
+
     - name: 初始化编译环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         sudo -E apt-get -qq update -y
-        sudo -E apt-get -qq full-upgrade -y
-        sudo -E apt-get -qq install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
-        bzip2 ccache clang cmake cpio curl device-tree-compiler flex gawk gcc-multilib g++-multilib gettext \
-        genisoimage git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libfuse-dev libglib2.0-dev \
-        libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libpython3-dev \
-        libreadline-dev libssl-dev libtool llvm lrzsz msmtp ninja-build p7zip p7zip-full patch pkgconf \
-        python3 python3-pyelftools python3-setuptools qemu-utils rsync scons squashfs-tools subversion \
-        swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev libfuse-dev
+        sudo -E apt-get -qq install -y $(curl -fsSL https://raw.githubusercontent.com/woni928/OpenWrt-N1/refs/heads/main/N1/Immortalwrt/2410)
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
+        echo "硬盘详情："
+        df -Th
+
 
     - name: 克隆源码
-      working-directory: /workdir        # ← 改动：在 /workdir 下执行
+      working-directory: /workdir
       run: |
+        df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
-        ln -s /workdir/openwrt $GITHUB_WORKSPACE/openwrt   # ← 改动：建立软链接，保持 $GITHUB_WORKSPACE/openwrt 存在
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
         useVersionInfo=$(git show -s --date=short --format="date: %cd<br/>commit: %s<br/>commit hash: %H")
         echo "useVersionInfo=$useVersionInfo" >> $GITHUB_ENV
         echo "DATE=$(date "+%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "tag_name=$(date +%Y%m%d)" >> $GITHUB_ENV
-
-    - name: 缓存编译目录
-      uses: stupidloud/cachewrtbuild@main
-      with:
-        ccache: 'true'
-        mixkey: N1-${{ env.REPO_BRANCH }}
-        prefix: /workdir/openwrt   # ← 改动：缓存路径固定为 /workdir/openwrt
-
-    - name: 验证缓存是否命中
-      run: |
-        echo "🔍 检查 toolchain 缓存是否恢复..."
-        ls -d /workdir/openwrt/staging_dir/toolchain* || echo "❌ 未命中 toolchain 缓存"
-        echo "🔍 检查 ccache 是否启用..."
-        ls -d /workdir/.ccache || echo "⚠️ 未启用 ccache"
 
     - name: 加载DIY_P1
       run: |
@@ -105,28 +109,50 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P2_SH
 
     - name: 下载软件包
+      id: package
       run: |
         cd openwrt
         make defconfig
         make download -j8
+        find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-
+        echo "硬盘详情："
+        df -Th
+                
     - name: 编译固件
+      id: compile
       run: |
         cd openwrt
+        echo -e "$(nproc) thread compile"
         make -j$(nproc) || make -j1 || make -j1 V=s
+        echo "status=success" >> $GITHUB_OUTPUT
         grep '^CONFIG_TARGET.*DEVICE.*=y' .config | sed -r 's/.*DEVICE_(.*)=y/\1/' > DEVICE_NAME
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
 
     - name: 清理磁盘空间
+      if: (!cancelled())
       run: |
+        echo "清理之前："
+        df -hT
         mkdir openwrt-armvirt
         mkdir /workdir/upload
         cp openwrt/bin/targets/*/*/*.tar.gz /workdir/upload/
         mv openwrt/bin/targets/*/*/*.tar.gz openwrt-armvirt/
-        rm -rf /workdir/openwrt/   # ← 改动：清理源码目录
-
+        echo -e "\n"
+        echo "列出空间占用前10的目录或文件："
+        sudo du -h --max-depth=1 /workdir |sort -nr | head -10
+        rm -rf /workdir/openwrt/
+        echo -e "\n"
+        echo "清理之后："
+        df -hT
+        echo -e "\n"
+        echo "/workdir路径文件"
+        ls -l
+        echo -e "\n"
+        echo "列出空间占用前10的目录或文件："
+        sudo du -h --max-depth=1 /workdir |sort -nr | head -10
+        
     - name: 打包内核
       uses: unifreq/openwrt_packit@master
       env:
@@ -134,30 +160,43 @@ jobs:
         OPENWRT_ARMVIRT: openwrt-armvirt/*.tar.gz
         PACKAGE_SOC: s905d
         KERNEL_AUTO_LATEST: true
+       # KERNEL_REPO_URL: 自定义某个特定内核
         KERNEL_REPO_URL: breakingbadboy/OpenWrt
         KERNEL_VERSION_NAME: 6.6.y
-
+        
     - name: 整理文件
       run: mv /opt/openwrt_packit/output/* /workdir/upload/
+      
 
     - name: 发布固件
       uses: ncipollo/release-action@v1
       with:
         name: OpenWrt-N1 → ${{ env.DATE }}
-        tag: CN1--23.05_${{ env.tag_name }}
-        artifacts: /workdir/upload/*
+        tag: XN1-24.10_${{ env.tag_name }}
+        artifacts: /workdir/upload/openwrt*
         allowUpdates: true
         token: ${{ secrets.GITHUB_TOKEN }}
         body: |
               ---  使用说明 ---
-              源码: ${{ env.REPO_URL }}
-              分支: ${{ env.REPO_BRANCH }}
+              
+              源码：${{ env.REPO_URL }}
+              分支：${{ env.REPO_BRANCH }}
+              
               网关：192.168.123.2
               用户名：root
               密码：password
+
               更新说明：
               2025-0418：本固件所含插件，请看主页图片。
-              2025-0921：同步上游的更新。测试是否缓存可以C
+              2025-0922：同步上游的更新，增加SSR插件。更换科学上网插件依赖的源码，测试是否最新版。
+
+
+    - name: 删除运行记录
+      uses: Mattraks/delete-workflow-runs@main
+      with:
+        retain_days: 3
+        keep_minimum_runs: 4
+        token: ${{ env.GITHUB_TOKEN }}
 
     - name: 删除自动发布的旧固件
       uses: dev-drprasad/delete-older-releases@master
@@ -165,3 +204,4 @@ jobs:
       with:
         keep_latest: 7
         delete_tags : true
+        
